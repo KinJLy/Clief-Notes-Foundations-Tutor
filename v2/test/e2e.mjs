@@ -174,11 +174,15 @@ async function playBeat(page, info) {
       const card = page.locator("#quiz-card");
       await card.waitFor({ state: "visible", timeout: 8000 });
       await card.locator(".quiz-opt").first().click();
-      // A follow-up question may appear (e.g. Windows architecture).
+      // A follow-up question may appear (e.g. Windows architecture) — but only
+      // while we're still on the SAME picker beat. Don't bleed into the next card.
       await page.waitForTimeout(300);
-      if (await card.isVisible()) {
-        const opts = card.locator(".quiz-opt");
-        if (await opts.count()) await opts.first().click();
+      const stillPicker = await page.evaluate(() => {
+        const b = FC.engine._beats()[FC.state.data.progress.beat];
+        return !!b && b.type === "picker";
+      });
+      if (stillPicker && await card.isVisible()) {
+        await card.locator(".quiz-opt").first().click();
       }
       break;
     }

@@ -132,13 +132,17 @@ function lintDirectives(lessons) {
     const lesson = bySlug[slug];
     if (!lesson) { errors.push(`${slug}: directives exist but lesson is not in the routing table`); continue; }
 
-    for (const [gi, group] of (d.teach || []).entries()) {
-      for (const ci of group.chunks || []) {
+    // Validate every chunk reference (intro, teach groups, per-step learn) is in range.
+    const checkChunks = (indices, where) => {
+      for (const ci of indices || []) {
         if (ci < 0 || ci >= lesson.chunks.length) {
-          errors.push(`${slug}: teach[${gi}] references chunk ${ci} but the brief has ${lesson.chunks.length} chunks (curriculum may have changed — re-check groupings)`);
+          errors.push(`${slug}: ${where} references chunk ${ci} but the brief has ${lesson.chunks.length} chunks (curriculum may have changed — re-check groupings)`);
         }
       }
-    }
+    };
+    checkChunks(d.intro, "intro");
+    for (const [gi, group] of (d.teach || []).entries()) checkChunks(group.chunks, `teach[${gi}]`);
+    for (const [bi, step] of (d.build || []).entries()) checkChunks(step.learn, `build[${bi}].learn`);
 
     const strings = [];
     collectStrings(d, slug, strings);
