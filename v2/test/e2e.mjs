@@ -64,6 +64,18 @@ async function answerQuiz(page, quiz) {
   const card = page.locator("#quiz-card");
   await card.waitFor({ state: "visible", timeout: 8000 });
   await card.locator(".quiz-opt", { hasText: correct.t.slice(0, 40) }).first().click();
+  // A correct answer now shows the explanation and a "Got it" button before advancing.
+  const gotIt = card.locator("button", { hasText: "Got it" });
+  await gotIt.waitFor({ state: "visible", timeout: 4000 });
+  // Assert the explanation rendered (bug 2) and the card stayed within the viewport (bug 1).
+  const withinViewport = await card.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return r.bottom <= window.innerHeight + 1 && r.top >= -1;
+  });
+  if (!withinViewport) throw new Error("quiz card overflows the viewport");
+  const hasExplain = await card.locator(".quiz-explain").count();
+  if (!hasExplain) throw new Error("correct answer showed no explanation");
+  await gotIt.click();
 }
 
 async function handleModalReflect(page, required) {
@@ -121,7 +133,7 @@ async function playBeat(page, info) {
       await clickGuidePrimary(page);
       break;
 
-    case "clarifier":
+    case "check":
       await answerQuiz(page, info.quiz);
       break;
 

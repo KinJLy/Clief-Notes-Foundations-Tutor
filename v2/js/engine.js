@@ -36,23 +36,47 @@ FC.engine = (function () {
     return pages;
   }
 
+  // Teaching is woven into the doing: a short intro, then for each build step
+  // the "here's why" (learn) is delivered right before the instruction, and its
+  // comprehension check (optional, skippable) fires right after the action.
+  function teachPages(chunkIndices, tail) {
+    var pages = paginate({ chunks: chunkIndices || [] });
+    return pages.map(function (page, i) {
+      return { phase: "B", type: "teach-page", page: page, groupEnd: tail && i === pages.length - 1 };
+    });
+  }
+
+  function emitTeachGroup(group) {
+    teachPages(group.chunks, !group.clarifier).forEach(function (b) { beats.push(b); });
+    // The old "gating clarifier" is now an optional, skippable self-check.
+    if (group.clarifier) beats.push({ phase: "B", type: "check", quiz: group.clarifier });
+  }
+
+  function emitBuildStep(d) {
+    if (d.learn && d.learn.length) teachPages(d.learn, false).forEach(function (b) { beats.push(b); });
+    beats.push({ phase: "C", type: d.type, d: d });
+    if (d.check) beats.push({ phase: "C", type: "check", quiz: d.check });
+  }
+
   function compile(slug) {
     lesson = FC.content.bySlug[slug];
     directives = FC.directives[slug];
     beats = [{ phase: "A", type: "open" }];
     if (!lesson || !directives) { beats.push({ phase: "E", type: "close" }); return; }
 
-    (directives.teach || []).forEach(function (group) {
-      var pages = paginate(group);
-      pages.forEach(function (page, i) {
-        beats.push({ phase: "B", type: "teach-page", page: page, groupEnd: i === pages.length - 1 && !group.clarifier });
-      });
-      if (group.clarifier) beats.push({ phase: "B", type: "clarifier", quiz: group.clarifier });
-    });
-
-    (directives.build || []).forEach(function (d) {
-      beats.push({ phase: "C", type: d.type, d: d });
-    });
+    // Interleave teaching with doing: explain a concept, then act on it, then the
+    // next concept, then the next action — instead of front-loading all the theory.
+    // Zip the teach groups against the build steps in order.
+    if (directives.intro && directives.intro.length) {
+      teachPages(directives.intro, true).forEach(function (b) { beats.push(b); });
+    }
+    var groups = directives.teach || [];
+    var steps = directives.build || [];
+    var n = Math.max(groups.length, steps.length);
+    for (var i = 0; i < n; i++) {
+      if (groups[i]) emitTeachGroup(groups[i]);   // "here's why"
+      if (steps[i]) emitBuildStep(steps[i]);       // "now do it"
+    }
 
     beats.push({ phase: "D", type: "checkin" });
     beats.push({ phase: "E", type: "close" });
@@ -182,16 +206,19 @@ FC.engine = (function () {
     });
   };
 
-  handlers["clarifier"] = function (beat) {
+  // Optional, non-gating self-check. Skipping never blocks; answering earns XP
+  // and the "why" is always shown so it teaches rather than interrogates.
+  handlers["check"] = function (beat) {
     FC.guide.hide();
     FC.quiz.ask({
-      eyebrow: "Say it back",
+      eyebrow: "Quick self-check — skip anytime",
       q: beat.quiz.q,
       options: beat.quiz.options,
       explain: beat.quiz.explain,
-      spine: lesson.spine
+      spine: lesson.spine,
+      skippable: true
     }, function (result) {
-      FC.xp.add(result.firstTry ? 10 : 5, result.firstTry ? "First try" : "Got there");
+      if (!result.skipped) FC.xp.add(result.firstTry ? 10 : 5, result.firstTry ? "First try" : "Got there");
       advance();
     });
   };
@@ -208,18 +235,21 @@ FC.engine = (function () {
     });
   };
 
-  // A gating quiz in the middle of a build (mini checks, "name the five parts").
+  // An optional mini self-check in the middle of a build.
   handlers["quiz"] = function (beat) {
     FC.guide.hide();
     FC.quiz.ask({
-      eyebrow: beat.d.eyebrow || "Quick check",
+      eyebrow: (beat.d.eyebrow || "Quick check") + " — skip anytime",
       q: beat.d.quiz.q,
       options: beat.d.quiz.options,
       explain: beat.d.quiz.explain,
-      spine: lesson.spine
+      spine: lesson.spine,
+      skippable: true
     }, function (result) {
-      FC.xp.add(result.firstTry ? 10 : 5, result.firstTry ? "First try" : "Got there");
-      if (beat.d.achievement) FC.xp.award(beat.d.achievement);
+      if (!result.skipped) {
+        FC.xp.add(result.firstTry ? 10 : 5, result.firstTry ? "First try" : "Got there");
+        if (beat.d.achievement) FC.xp.award(beat.d.achievement);
+      }
       advance();
     });
   };
@@ -540,24 +570,27 @@ FC.engine = (function () {
       return;
     }
 
+    // The real gate is the artifact (built above). The quiz is an optional
+    // self-check — answer it for XP, or skip it and still complete the lesson.
     function askGate(quiz, eyebrow, next) {
       FC.quiz.ask({
         eyebrow: eyebrow,
         q: quiz.q,
         options: quiz.options,
         explain: quiz.explain,
-        spine: lesson.spine
+        spine: lesson.spine,
+        skippable: true
       }, next);
     }
 
     FC.guide.hide();
-    askGate(ci.quiz, "Check-in", function (result) {
-      FC.xp.add(result.firstTry ? 25 : 15, "Check-in passed");
+    askGate(ci.quiz, "Check-in — skip anytime", function (result) {
+      if (!result.skipped) FC.xp.add(result.firstTry ? 25 : 15, "Check-in passed");
 
       function afterGates(answerText) {
         if (ci.quiz2) {
           askGate(ci.quiz2, "Check-in — part two", function (r2) {
-            FC.xp.add(r2.firstTry ? 25 : 15, "Final gate passed");
+            if (!r2.skipped) FC.xp.add(r2.firstTry ? 25 : 15, "Final gate passed");
             finishInner(answerText);
           });
         } else {

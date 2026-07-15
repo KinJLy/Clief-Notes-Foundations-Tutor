@@ -575,7 +575,7 @@ input[type="text"], textarea, select {
 /* ---------- Quiz / modal ---------- */
 
 #scrim {
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: rgba(42, 34, 28, 0.28);
   z-index: 140;
@@ -584,13 +584,13 @@ input[type="text"], textarea, select {
 #scrim.show { display: block; }
 
 .modal-card {
-  position: absolute;
+  position: fixed;
   left: 50%;
-  top: 46%;
+  top: 50%;
   transform: translate(-50%, -50%);
   width: 520px;
   max-width: calc(100vw - 48px);
-  max-height: 82vh;
+  max-height: calc(100vh - 120px);
   overflow-y: auto;
   background: var(--cream-50);
   border: var(--border);
@@ -600,7 +600,10 @@ input[type="text"], textarea, select {
   padding: var(--sp-6);
   display: none;
 }
-.modal-card.show { display: block; animation: rise-in var(--t-med) both; }
+/* Opacity-only entrance — must NOT animate transform, or it clobbers the
+   translate(-50%,-50%) that centers the card and the card drops off-screen. */
+@keyframes modal-in { from { opacity: 0; } to { opacity: 1; } }
+.modal-card.show { display: block; animation: modal-in var(--t-med) both; }
 
 .modal-card .eyebrow {
   font-family: var(--font-sans);

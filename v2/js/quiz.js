@@ -25,8 +25,8 @@ FC.quiz = (function () {
     return U.el("div", { class: "spine-stripe", style: "background: var(--spine-" + (spine || 1) + ")" });
   }
 
-  // opts: { eyebrow, q, options:[{t, correct}], explain, spine }
-  // done({ firstTry: bool, attempts: n })
+  // opts: { eyebrow, q, options:[{t, correct}], explain, spine, skippable }
+  // done({ firstTry: bool, attempts: n, skipped: bool })
   function ask(opts, done) {
     var c = card();
     var attempts = 0;
@@ -47,16 +47,25 @@ FC.quiz = (function () {
           locked = true;
           attempts++;
           FC.state.data.quizStats.attempts++;
+          U.qa(".quiz-opt", c).forEach(function (b) { b.disabled = true; });
           if (opt.correct) {
             btn.classList.add("correct");
             FC.audio.play("correct");
             if (attempts === 1) FC.state.data.quizStats.firstTryCorrect++;
             else FC.state.data.quizStats.sectionClean = false;
             FC.state.save();
-            setTimeout(function () {
-              close(c);
-              done({ firstTry: attempts === 1, attempts: attempts });
-            }, 700);
+            // Always explain WHY it's right, then let the player move on.
+            if (opts.explain) {
+              c.appendChild(U.el("div", { class: "quiz-explain", text: opts.explain }));
+            }
+            var okActions = U.el("div", { class: "modal-actions" }, [
+              U.el("button", { class: "btn-primary", text: "Got it", onclick: function () {
+                close(c);
+                done({ firstTry: attempts === 1, attempts: attempts });
+              } })
+            ]);
+            c.appendChild(okActions);
+            c.scrollTop = c.scrollHeight;
           } else {
             btn.classList.add("wrong");
             FC.audio.play("wrong");
@@ -64,15 +73,29 @@ FC.quiz = (function () {
             FC.state.save();
             var explain = U.el("div", { class: "quiz-explain", text: opts.explain || "Not quite. Look at it again." });
             c.appendChild(explain);
-            var actions = U.el("div", { class: "modal-actions" }, [
-              U.el("button", { class: "btn-primary", text: "Try again", onclick: function () { render(); } })
-            ]);
+            var actions = U.el("div", { class: "modal-actions" });
+            if (opts.skippable) {
+              actions.appendChild(U.el("button", { class: "btn-quiet", text: "Skip this", onclick: function () {
+                close(c); done({ skipped: true });
+              } }));
+            }
+            actions.appendChild(U.el("button", { class: "btn-primary", text: "Try again", onclick: function () { render(); } }));
             c.appendChild(actions);
-            U.qa(".quiz-opt", c).forEach(function (b) { b.disabled = true; });
+            c.scrollTop = c.scrollHeight;
           }
         });
         c.appendChild(btn);
       });
+
+      // Optional checks can be waved off before answering.
+      if (opts.skippable) {
+        c.appendChild(U.el("div", { class: "modal-actions" }, [
+          U.el("button", { class: "btn-quiet", text: "Skip check", onclick: function () {
+            if (locked) return;
+            close(c); done({ skipped: true });
+          } })
+        ]));
+      }
     }
 
     scrim(true);
