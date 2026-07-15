@@ -6,7 +6,7 @@ For Clief Notes Skool forum members who've tried the Foundation lessons and want
 
 ---
 
-## New: play it as a game first (no install)
+## New V2: play it as a game first (no install)
 
 Prefer to learn by doing before touching a terminal? There's now a browser-based version — a simulated desktop that walks you through the same 11 lessons video-game style. No install, no account, no network: open `v2/index.html` in your browser and press **Start**. When you finish, download your workspace as real files and come back here to run the real thing.
 
