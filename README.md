@@ -4,7 +4,23 @@ Foundation Companion walks you through Jake Van Clief's 11 Foundation lessons fr
 
 For Clief Notes Skool forum members who've tried the Foundation lessons and want a more hands-on walkthrough.
 
-> **Prefer to play it as a game first?** There's a browser-based version: a simulated desktop that walks you through the same 11 lessons video-game style — no install, no account needed. Open `v2/index.html` in your browser and press Start. Details in [v2/README.md](v2/README.md). When you finish, download your workspace as real files and come back here to run the real thing.
+---
+
+## New: play it as a game first (no install)
+
+Prefer to learn by doing before touching a terminal? There's now a browser-based version — a simulated desktop that walks you through the same 11 lessons video-game style. No install, no account, no network: open `v2/index.html` in your browser and press **Start**. When you finish, download your workspace as real files and come back here to run the real thing.
+
+![Foundation Companion: Desktop — the title screen](v2/screenshots/title.png)
+
+A teaching assistant guides every step, and the instructions anchor right next to whatever you should do next — so you're never hunting for what the game means:
+
+![A guided build step — the instruction popup anchors beside the highlighted control](v2/screenshots/guide-anchored.png)
+
+Later lessons add a fully scripted **Claude Code (simulated)** window, so you practice prompting against a realistic workspace before running the real Claude Code:
+
+![The simulated Claude Code window reading a workspace and taking a prompt](v2/screenshots/claude-sim.png)
+
+Everything you build maps 1:1 to real files. Full details in [v2/README.md](v2/README.md).
 
 ---
 

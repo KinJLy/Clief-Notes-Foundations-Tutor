@@ -7,6 +7,7 @@ FC.windows = (function () {
 
   var zTop = 50;
   var wins = {}; // id -> {el, taskBtn}
+  var userArranged = false; // flips true once the player drags a window
 
   // ---------------------------------------------------------------------------
   // Window frames
@@ -38,6 +39,7 @@ FC.windows = (function () {
       var rect = el.getBoundingClientRect();
       var dx = e.clientX - rect.left, dy = e.clientY - rect.top;
       function move(ev) {
+        userArranged = true; // player took manual control — stop auto-tiling on resize
         var x = Math.min(Math.max(ev.clientX - desktop.left - dx, -rect.width + 80), desktop.width - 60);
         var y = Math.min(Math.max(ev.clientY - desktop.top - dy, 0), desktop.height - 40);
         el.style.left = x + "px";
@@ -97,6 +99,47 @@ FC.windows = (function () {
     ed.style.height = Math.max(320, desk.height - 32) + "px";
     cl.style.left = Math.max(340, desk.width - 470) + "px"; cl.style.top = "40px";
     cl.style.width = "430px"; cl.style.height = Math.max(320, desk.height - 90) + "px";
+
+    // The fixed side-by-side widths above can exceed a small/zoomed viewport;
+    // pull each frame back so the default layout never spills off-screen either.
+    clampWin(ex, desk); clampWin(ed, desk); clampWin(cl, desk);
+  }
+
+  // Pull one window fully back into the desktop: cap its size to the viewport,
+  // then clamp its top-left so the whole frame (and its titlebar) stays reachable.
+  // Reads the inline style size (not offsetWidth) so it's correct for windows
+  // that are currently hidden (display:none reports 0 for offset dimensions).
+  function clampWin(el, desk) {
+    var maxW = Math.max(240, desk.width - 8);
+    var maxH = Math.max(160, desk.height - 8);
+    var w = Math.min(parseFloat(el.style.width) || el.offsetWidth, maxW);
+    var h = Math.min(parseFloat(el.style.height) || el.offsetHeight, maxH);
+    el.style.width = w + "px";
+    el.style.height = h + "px";
+    var left = parseFloat(el.style.left) || 0;
+    var top = parseFloat(el.style.top) || 0;
+    left = Math.min(Math.max(left, 0), Math.max(0, desk.width - w));
+    top = Math.min(Math.max(top, 0), Math.max(0, desk.height - h));
+    el.style.left = left + "px";
+    el.style.top = top + "px";
+  }
+
+  // Called on resize/zoom. Untouched layout re-tiles responsively; a layout the
+  // player has dragged is preserved but clamped so nothing escapes off-screen.
+  function reflow() {
+    var host = U.q("#desktop");
+    if (!host) return;
+    var desk = host.getBoundingClientRect();
+    if (!desk.width) return;
+    if (!userArranged) {
+      layoutDefaults();
+    } else {
+      Object.keys(wins).forEach(function (id) {
+        var el = wins[id].el;
+        if (!el.classList.contains("hidden")) clampWin(el, desk);
+      });
+    }
+    U.emit("desktop:reflow");
   }
 
   // ---------------------------------------------------------------------------
@@ -433,7 +476,14 @@ FC.windows = (function () {
     hideWin("editor");
     hideWin("claude");
     explorer.render();
-    window.addEventListener("resize", function () { /* windows keep their spots; fine */ });
+
+    // Zoom or a resized window used to leave frames stranded off-screen. Re-flow
+    // (debounced) so the layout always fits the current viewport.
+    var rt;
+    window.addEventListener("resize", function () {
+      clearTimeout(rt);
+      rt = setTimeout(reflow, 120);
+    });
   }
 
   return {
@@ -443,6 +493,7 @@ FC.windows = (function () {
     show: showWin,
     hide: hideWin,
     focus: focusWin,
-    isOpen: isOpen
+    isOpen: isOpen,
+    reflow: reflow
   };
 })();

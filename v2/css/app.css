@@ -93,6 +93,17 @@ input[type="text"], textarea, select {
   font-size: 16px;
   white-space: nowrap;
 }
+.wordmark-text { display: flex; flex-direction: column; line-height: 1.15; }
+.wordmark-title { font-family: var(--font-serif); font-weight: 600; font-size: 16px; }
+/* Attribution credit — sky-blue links per the token rule (brown stays logo-only). */
+.wordmark-credit {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--ink-500);
+}
+.wordmark-credit a { color: var(--accent); text-decoration: none; }
+.wordmark-credit a:hover { color: var(--accent-hover); text-decoration: underline; }
 
 #lesson-title {
   font-family: var(--font-sans);
@@ -103,6 +114,7 @@ input[type="text"], textarea, select {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0; /* let it truncate instead of shoving header items off-screen */
 }
 
 #lesson-title .spine-dot {
@@ -488,8 +500,8 @@ input[type="text"], textarea, select {
   overflow: hidden;
 }
 #guide.show { display: block; animation: rise-in var(--t-med) both; }
-/* When the Claude window is open on the right, the guide docks left of it. */
-#guide.dock-left { right: auto; left: 310px; }
+/* Position is driven by js/guide.js positionGuide(): it anchors the popup beside
+   the spotlit target, or bottom-right when there's nothing to point at. */
 
 #guide-head {
   display: flex;
@@ -737,6 +749,21 @@ input[type="text"], textarea, select {
   transition: opacity var(--t-slow);
 }
 .level-books span.earned { opacity: 1; }
+
+/* ---------- Narrow viewports / high zoom ---------- */
+
+/* The header is the first thing to overflow when the viewport gets tight (small
+   monitor or zoomed in). Shed the least-critical items before anything spills. */
+@media (max-width: 780px) {
+  #topbar { gap: var(--sp-3); padding: 0 var(--sp-3); }
+  #lesson-title { display: none; }
+  #xp-bar { width: 96px; }
+}
+@media (max-width: 560px) {
+  #topbar { gap: var(--sp-2); }
+  #xp-level { display: none; }
+  #xp-bar { width: 64px; }
+}
 
 /* ---------- Reduced motion ---------- */
 
