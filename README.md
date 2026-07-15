@@ -24,6 +24,12 @@ Everything you build maps 1:1 to real files. Full details in [v2/README.md](v2/R
 
 ---
 
+## Continue on with the full workflow
+
+V2 is just the addon, V1 below is the full workflow taking the tutor into Claude yourself and working in a real environment. 
+
+---
+
 ## What you'll walk away with
 
 Two things, in your own words:
