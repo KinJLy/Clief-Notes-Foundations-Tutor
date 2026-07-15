@@ -4,6 +4,8 @@ Foundation Companion walks you through Jake Van Clief's 11 Foundation lessons fr
 
 For Clief Notes Skool forum members who've tried the Foundation lessons and want a more hands-on walkthrough.
 
+> **Prefer to play it as a game first?** There's a browser-based version: a simulated desktop that walks you through the same 11 lessons video-game style — no install, no account needed. Open `v2/index.html` in your browser and press Start. Details in [v2/README.md](v2/README.md). When you finish, download your workspace as real files and come back here to run the real thing.
+
 ---
 
 ## What you'll walk away with
