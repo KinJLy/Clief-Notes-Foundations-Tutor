@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Foundation Companion: Desktop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- Header strip -->
+  <header id="topbar">
+    <div class="wordmark">
+      <!-- bookshelf mark — the one place brown lives -->
+      <svg class="shelf-logo" width="26" height="22" viewBox="0 0 26 22" aria-hidden="true">
+        <rect x="1" y="18" width="24" height="3" rx="1" fill="#754c24"/>
+        <rect x="3"  y="4" width="3.4" height="14" rx="0.8" fill="#fdc689"/>
+        <rect x="7.4" y="6" width="3.4" height="12" rx="0.8" fill="#6dcff6"/>
+        <rect x="11.8" y="3" width="3.4" height="15" rx="0.8" fill="#a3d39c"/>
+        <rect x="16.2" y="7" width="3.4" height="11" rx="0.8" fill="#f69679"/>
+        <rect x="20.6" y="5" width="3.4" height="13" rx="0.8" fill="#fff799"/>
+      </svg>
+      <span class="wordmark-text">
+        <span class="wordmark-title">Foundation companion</span>
+        <span class="wordmark-credit">Powered by <a href="https://www.skool.com/cliefnotes/about?ref=f4482ac988fb4a7b8da3efa95cfc1d00" target="_blank" rel="noopener">Clief Notes</a> · <a href="https://donsbookshelf.com" target="_blank" rel="noopener">Don's Bookshelf</a></span>
+      </span>
+    </div>
+    <div id="lesson-title"></div>
+    <div class="spacer"></div>
+    <div id="xp-wrap">
+      <span id="xp-level">Level 1</span>
+      <div id="xp-bar"><div id="xp-fill"></div></div>
+      <span><span id="xp-num">0</span> xp</span>
+    </div>
+    <button class="iconbtn" id="btn-mute" title="Sound on or off" aria-label="Toggle sound"></button>
+    <button class="iconbtn" id="btn-menu" title="Menu" aria-label="Menu"></button>
+    <div id="menu-pop"></div>
+  </header>
+
+  <!-- Desktop -->
+  <main id="desktop">
+
+    <!-- Explorer -->
+    <section class="window" id="win-explorer">
+      <div class="window-titlebar">
+        <span class="win-spine" style="background: var(--spine-1)"></span>
+        <span>Files — foundation-companion</span>
+        <span class="win-actions"><button class="win-min" title="Minimize" aria-label="Minimize"></button></span>
+      </div>
+      <div class="window-body">
+        <div id="explorer-toolbar">
+          <button id="btn-new-folder" disabled></button>
+          <button id="btn-new-file" disabled></button>
+        </div>
+        <div id="explorer-hint" class="explorer-hint" style="display:none"></div>
+        <div id="explorer-tree" class="tree"></div>
+      </div>
+    </section>
+
+    <!-- Editor -->
+    <section class="window hidden" id="win-editor">
+      <div class="window-titlebar">
+        <span class="win-spine" style="background: var(--spine-2)"></span>
+        <span>Editor</span>
+        <span class="win-actions"><button class="win-min" title="Minimize" aria-label="Minimize"></button></span>
+      </div>
+      <div id="editor-tabs"></div>
+      <div class="window-body" style="flex-direction: column;">
+        <div id="editor-empty">open a file from the explorer, or follow the guide</div>
+        <div id="editor-surface"></div>
+        <div id="editor-actions"></div>
+      </div>
+    </section>
+
+    <!-- Claude Code (simulated) -->
+    <section class="window hidden" id="win-claude">
+      <div class="window-titlebar">
+        <span class="win-spine" style="background: var(--spine-3)"></span>
+        <span>Claude Code (simulated)</span>
+        <span class="win-actions"><button class="win-min" title="Minimize" aria-label="Minimize"></button></span>
+      </div>
+      <div id="claude-head">
+        <span>folder:</span>
+        <select id="claude-folder"></select>
+      </div>
+      <div class="window-body" style="flex-direction: column;">
+        <div id="claude-log"></div>
+        <div id="claude-suggest" style="display:none"></div>
+        <div id="claude-inputrow">
+          <textarea id="claude-input" placeholder="tell Claude what you need…"></textarea>
+          <button class="btn-primary" id="claude-send" title="Send" aria-label="Send"></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Guide popup -->
+    <aside id="guide">
+      <div id="guide-head">
+        <span id="guide-avatar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#754c24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z"/>
+          </svg>
+        </span>
+        <span>Teaching assistant — trained on Jake's curriculum</span>
+        <span class="spacer" style="flex:1"></span>
+        <span id="guide-progress" class="progress-note"></span>
+      </div>
+      <div id="guide-body"></div>
+      <div id="guide-actions"></div>
+    </aside>
+
+    <!-- Modal layer -->
+    <div id="scrim"></div>
+    <div class="modal-card" id="quiz-card"></div>
+
+    <!-- Toasts -->
+    <div id="toasts"></div>
+
+    <!-- Level-up / finale screen -->
+    <div class="screen" id="level-screen"><div class="screen-card" id="level-card"></div></div>
+
+    <!-- Title screen -->
+    <div class="screen" id="title-screen">
+      <div class="screen-card">
+        <svg class="shelf-logo" width="120" height="96" viewBox="0 0 26 22" aria-hidden="true">
+          <rect x="1" y="18" width="24" height="3" rx="1" fill="#754c24"/>
+          <rect x="3"  y="4" width="3.4" height="14" rx="0.8" fill="#fdc689"/>
+          <rect x="7.4" y="6" width="3.4" height="12" rx="0.8" fill="#6dcff6"/>
+          <rect x="11.8" y="3" width="3.4" height="15" rx="0.8" fill="#a3d39c"/>
+          <rect x="16.2" y="7" width="3.4" height="11" rx="0.8" fill="#f69679"/>
+          <rect x="20.6" y="5" width="3.4" height="13" rx="0.8" fill="#fff799"/>
+        </svg>
+        <h1>Foundation companion: desktop</h1>
+        <div class="sub">Jake's 11 Foundation lessons as a game. Build a real workspace on a practice desktop — folders, files, prompts, and a simulated Claude Code — then download everything you made as real files.</div>
+        <div class="actions" id="title-actions"></div>
+        <div class="fineprint">Progress saves in your browser. Sound is off until you turn it on. No account, no network — everything stays on your machine.</div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Taskbar -->
+  <footer id="taskbar">
+    <button class="task-btn" id="task-explorer"><span class="dot"></span>Files</button>
+    <button class="task-btn" id="task-editor"><span class="dot"></span>Editor</button>
+    <button class="task-btn" id="task-claude"><span class="dot"></span>Claude Code (simulated)</button>
+    <div class="spacer"></div>
+    <span id="save-note"></span>
+  </footer>
+
+</div>
+
+<input type="file" id="import-file" accept="application/json" style="display:none">
+
+<!-- Classic scripts, dependency order. No modules: file:// blocks module CORS. -->
+<script src="js/util.js"></script>
+<script src="js/data/content.js"></script>
+<script src="js/data/directives.js"></script>
+<script src="js/vfs.js"></script>
+<script src="js/state.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/xp.js"></script>
+<script src="js/quiz.js"></script>
+<script src="js/guide.js"></script>
+<script src="js/windows.js"></script>
+<script src="js/claudesim.js"></script>
+<script src="js/zip.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
