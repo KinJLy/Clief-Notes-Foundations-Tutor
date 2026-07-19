@@ -1,3 +1,6 @@
+---
+custom-width: 80
+---
 # Foundation Companion: Desktop (v2 addon)
 
 The 11 Foundation lessons as a browser game. A simulated desktop — file explorer,
